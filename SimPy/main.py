@@ -18,7 +18,7 @@ def compare_latex_expressions(latex_expr1, latex_expr2):
     expr1, expr2 = simplify_latex_expression(latex_expr1), simplify_latex_expression(latex_expr2)
 
     # Check if the expressions are equal
-    equations_are_equal = Eq(expr1, expr2)
+    equations_are_equal = Eq(expr1, expr2) == True
 
     return equations_are_equal
 
@@ -32,3 +32,11 @@ def compare_sympy_expressions(sympy_expr1, sympy_expr2):
     equations_are_equal = Eq(expr1, expr2)
 
     return equations_are_equal
+
+
+def simpy_to_tree(sympy_expr):
+    pass
+
+
+def latex_to_tree(latex_expr):
+    pass
