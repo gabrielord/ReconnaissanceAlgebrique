@@ -115,14 +115,59 @@ def expression_to_sympy(expr):
 
 
 
+def randomize_literals(expr, max_num_changes=4):
+    curr_changes = 0
+    def traverse_and_randomize(node):
+        nonlocal curr_changes
+        if curr_changes >= max_num_changes:
+            return
+        if node['type'] == 'ATOMIC' and node['subtype'] == 'LITERAL':
+            node['val'] += random.uniform(-10, 10)
+            curr_changes += 1
+        elif node['type'] == 'OPERATION' and node["subtype"] in ["ARITHMETIC", "POW"]:
+            if node['subtype'] == 'POW':
+                traverse_and_randomize(node['left'])
+            else:
+                traverse_and_randomize(node['left'])
+                traverse_and_randomize(node['right'])
+        elif node['type'] == 'OPERATION' and node['subtype'] == 'FUNC':
+            traverse_and_randomize(node['argument'])
+
+    traverse_and_randomize(expr)
+
+def flip_signs(expr, max_num_changes = 4):
+    curr_changes = 0
+    def traverse_and_randomize(node):
+        nonlocal curr_changes
+        if curr_changes >= max_num_changes:
+            return
+        if node['type'] == 'ATOMIC' and node['subtype'] == 'LITERAL':
+            node['val'] = -node['val']
+            curr_changes += 1
+        elif node['type'] == 'OPERATION' and node["subtype"] in ["ARITHMETIC", "POW"]:
+            if node['subtype'] == 'POW':
+                traverse_and_randomize(node['left'])
+            else:
+                traverse_and_randomize(node['left'])
+                traverse_and_randomize(node['right'])
+        elif node['type'] == 'OPERATION' and node['subtype'] == 'FUNC':
+            traverse_and_randomize(node['argument'])
+
+    traverse_and_randomize(expr)
+        
+def render_expression_repr_to_file(expr, filename):
+    fig = plt.gcf()
+    fig.set_size_inches(18.5, 10.5)
+    graph = expression_to_graph(expr)
+    pos = graphviz_layout(graph, prog="dot")
+    # Draw the graph
+    nx.draw(graph,pos=pos, with_labels=True, labels=nx.get_node_attributes(graph, "val"), font_weight='bold', node_size=900, node_color='black', font_color='white', font_size=10)
+    plt.savefig(filename)
 # Example usage:
 expression = create_expression(8)
-print(expression)
 print(expression_to_sympy(expression))
-fig = plt.gcf()
-fig.set_size_inches(18.5, 10.5)
-graph = expression_to_graph(expression)
-pos = graphviz_layout(graph, prog="dot")
-# Draw the graph
-nx.draw(graph,pos=pos, with_labels=True, labels=nx.get_node_attributes(graph, "val"), font_weight='bold', node_size=900, node_color='black', font_color='white', font_size=10)
-plt.savefig("graph.png")
+render_expression_repr_to_file(expression, "orig.png")
+flip_signs(expression)
+print(expression_to_sympy(expression))
+render_expression_repr_to_file(expression, "changed.png")
+
