@@ -1,4 +1,5 @@
 import json
+import copy
 from typing import Tuple
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -136,25 +137,28 @@ def randomize_literals(expr, max_num_changes=4):
 
     traverse_and_randomize(expr)
 
+
 def flip_signs(expr, max_num_changes = 4):
     curr_changes = 0
     def traverse_and_randomize(node):
         nonlocal curr_changes
         if curr_changes >= max_num_changes:
-            return
-        if node['type'] == 'ATOMIC' and node['subtype'] == 'LITERAL':
+            return node
+        if node['type'] == 'ATOMIC' and node['subtype'] == 'LITERAL': # TODO: for variables change this into a multiplication node
             node['val'] = -node['val']
             curr_changes += 1
+        elif node["type"] == "ATOMIC" and node["subtype"] == "VARIABLE": 
+            original_value = node["val"]
+            node = {"type": "OPERATION", "subtype": "ARITHMETIC", "op": "MUL", "left":create_atomic("LITERAL", -1), "right": create_atomic("VARIABLE", original_value)} # TODO: Do the same thing with a probability for divisions and with different proportions 
+            curr_changes += 1
         elif node['type'] == 'OPERATION' and node["subtype"] in ["ARITHMETIC", "POW"]:
-            if node['subtype'] == 'POW':
-                traverse_and_randomize(node['left'])
-            else:
-                traverse_and_randomize(node['left'])
-                traverse_and_randomize(node['right'])
+                node["left"] = traverse_and_randomize(node['left'])
+                node["right"] = traverse_and_randomize(node['right'])
         elif node['type'] == 'OPERATION' and node['subtype'] == 'FUNC':
-            traverse_and_randomize(node['argument'])
-
-    traverse_and_randomize(expr)
+            node["argument"] = traverse_and_randomize(node['argument'])
+        
+        return node
+    expr = traverse_and_randomize(expr)
     
 def equivalent_literals(expr, max_num_changes = 2):
     curr_changes = 0
@@ -191,7 +195,7 @@ def generate_dataset(size,filepath, expr_len_range=(3,16), representation_type="
             for _ in range(size//(expr_len_range[1] - expr_len_range[0])):
                 expr = create_expression(l)
                 for alt in expression_alterations:
-                    alt_expr = expr.copy()
+                    alt_expr = copy.deepcopy(expr)
                     alt["func"](alt_expr)
                     output_data.append({"expr_l": json_graph.tree_data(expression_to_graph(expr), root=1), "expr_r": json_graph.tree_data(expression_to_graph(alt_expr), root=1), "score": alt["score"]})
 
@@ -202,10 +206,12 @@ def generate_dataset(size,filepath, expr_len_range=(3,16), representation_type="
             for _ in range(size//(expr_len_range[1] - expr_len_range[0])):
                 expr = create_expression(l)
                 for alt in expression_alterations:
-                    alt_expr = expr.copy()
+                    alt_expr = copy.deepcopy(expr)
                     alt["func"](alt_expr)
+                    # print("EXPRESSION : \n", expr, "\n----------------------------------------------\n")
+                    # print("ALT EXPRESSION : \n", alt_expr, "\n----------------------------------------------\n")
                     output_data.append({"expr_l": sp.latex(expression_to_sympy(expr)), "expr_r":  sp.latex(expression_to_sympy(alt_expr)), "score": alt["score"]})
-                output_data.append({"expr_l":  sp.latex(expression_to_sympy(expr)), "expr_r": sp.latex(expression_to_sympy(alt_expr, eval=True)), "score": 0})
+                output_data.append({"expr_l":  sp.latex(expression_to_sympy(expr)), "expr_r": sp.latex(expression_to_sympy(expr, eval=True)), "score": 0})
 
         gen_df = pd.DataFrame(output_data)
         gen_df.to_csv(filepath)
