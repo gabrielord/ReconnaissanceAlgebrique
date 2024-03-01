@@ -1,7 +1,11 @@
 from sympy import simplify, srepr, Eq
 from latex2sympy2 import latex2sympy, latex2latex
+
 from difflib import SequenceMatcher
 
+import torch
+from transformers import BertTokenizer, BertModel
+from sklearn.metrics.pairwise import cosine_similarity
 
 def simplify_latex_expression(latex_expr):
     return latex2sympy(latex2latex(latex_expr))
@@ -37,13 +41,17 @@ def simpy_to_tree(sympy_expr):
 def latex_to_tree(latex_expr):
     return srepr(simplify_latex_expression(latex_expr))
 
-def expression_tree_similarity(expr1, expr2):
-    # Create trees
-    tree1 = srepr(simplify_latex_expression(expr1))
-    tree2 = srepr(simplify_latex_expression(expr2))
-
-    # Calculate similarity ratio
+def get_tree_sequence_similarity(tree1, tree2):
     matcher = SequenceMatcher(None, tree1, tree2)
-    similarity_ratio = matcher.ratio()
+    return matcher.ratio()
 
-    return similarity_ratio
+
+def get_bert_embeddings(expr, model, tokenizer):
+    tokens = tokenizer(expr, return_tensors='pt')
+    with torch.no_grad():
+        outputs = model(**tokens)
+    embeddings = outputs.last_hidden_state.mean(dim=1).squeeze().numpy()
+    return embeddings
+
+def get_text_similarity(embeddings1, embeddings2):
+    return cosine_similarity([embeddings1], [embeddings2])[0][0]
