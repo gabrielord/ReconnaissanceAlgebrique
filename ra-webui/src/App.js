@@ -99,7 +99,7 @@ function App() {
                 <Box>
                   <BlockMath>{rightExpr}</BlockMath>
                 </Box>
-                <Button></Button>
+                <Button>Eval</Button>
               </Flex>
             </Box>
             <Box
