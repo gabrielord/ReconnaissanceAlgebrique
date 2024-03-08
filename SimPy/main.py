@@ -1,3 +1,4 @@
+from sympy.core.basic import Basic
 from sympy import simplify, srepr, Eq
 from latex2sympy2 import latex2sympy, latex2latex
 
@@ -6,6 +7,36 @@ from difflib import SequenceMatcher
 import torch
 from transformers import BertTokenizer, BertModel
 from sklearn.metrics.pairwise import cosine_similarity
+
+
+class TreeNode:
+
+    def __init__(self, label):
+        if isinstance(label, Basic):
+            self.label = label._class.name_
+        else:
+            self.label = label
+        self.children = []
+
+    def add_child(self, child):
+        self.children.append(child)
+
+
+def build_tree(expr, parent=None):
+
+    if isinstance(expr, Basic):
+        if expr.is_Atom:
+            node = TreeNode(str(expr))
+        else:
+            node = TreeNode(expr.func)  
+            for arg in expr.args:
+                child_node = build_tree(arg, node)
+                node.add_child(child_node)
+    else:
+        node = TreeNode(str(expr))
+
+    return node
+
 
 def simplify_latex_expression(latex_expr):
     return latex2sympy(latex2latex(latex_expr))
