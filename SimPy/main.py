@@ -1,13 +1,17 @@
 from sympy.core.basic import Basic
-from sympy import simplify, srepr, Eq
+from sympy import simplify, srepr, flatten, Add, Mul, Eq
 from latex2sympy2 import latex2sympy, latex2latex
 
 from difflib import SequenceMatcher
 
 import torch
-from transformers import BertTokenizer, BertModel
 from sklearn.metrics.pairwise import cosine_similarity
+from zss import Node
 
+COMMUTATIVE_FUNCTIONS = [Mul, Add]
+
+
+# Data structure for zss algorithm
 
 class TreeNode:
 
@@ -21,14 +25,16 @@ class TreeNode:
     def add_child(self, child):
         self.children.append(child)
 
-
 def build_tree(expr, parent=None):
 
     if isinstance(expr, Basic):
         if expr.is_Atom:
             node = TreeNode(str(expr))
         else:
-            node = TreeNode(expr.func)  
+            node = TreeNode(expr.func)
+            if expr.func in COMMUTATIVE_FUNCTIONS:
+                args = flatten(expr.args)
+                args = sorted(args, key=lambda x: str(x))
             for arg in expr.args:
                 child_node = build_tree(arg, node)
                 node.add_child(child_node)
@@ -38,6 +44,25 @@ def build_tree(expr, parent=None):
     return node
 
 
+
+# For our database
+
+def parse_database_tree(expression):
+
+    children = []
+    
+    if 'children' not in expression:
+        return Node(expression['val'])
+    for i in range(len(expression['children'])):
+        children.append(parse_database_tree(expression['children'][i]))
+    root = Node(expression['val'], children=children)
+    
+    return root
+
+
+
+# Simplify functions
+
 def simplify_latex_expression(latex_expr):
     return latex2sympy(latex2latex(latex_expr))
 
@@ -45,26 +70,29 @@ def simplify_sympy_expression(sympy_expr):
     return simplify(sympy_expr.doit().doit())
 
 
+# Compare functions
+
 def compare_latex_expressions(latex_expr1, latex_expr2):
-    
+
     # Convert and simplify expressions
     expr1, expr2 = simplify_latex_expression(latex_expr1), simplify_latex_expression(latex_expr2)
-
     # Check if the expressions are equal
     equations_are_equal = Eq(expr1, expr2) == True
 
     return equations_are_equal
 
 def compare_sympy_expressions(sympy_expr1, sympy_expr2):
-    
+
     # Simplify expressions
     expr1, expr2 = simplify_sympy_expression(sympy_expr1), simplify_sympy_expression(sympy_expr2)
-
     # Check if the expressions are equal
     equations_are_equal = Eq(expr1, expr2) == True
 
     return equations_are_equal
 
+
+
+# For sequence similarity
 
 def simpy_to_tree(sympy_expr):
     return srepr(simplify_sympy_expression(sympy_expr))
@@ -76,6 +104,9 @@ def get_tree_sequence_similarity(tree1, tree2):
     matcher = SequenceMatcher(None, tree1, tree2)
     return matcher.ratio()
 
+
+
+# For bert similarity
 
 def get_bert_embeddings(expr, model, tokenizer):
     tokens = tokenizer(expr, return_tensors='pt')
