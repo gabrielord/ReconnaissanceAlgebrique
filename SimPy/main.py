@@ -62,12 +62,32 @@ def parse_database_tree(expression):
 
 
 # Simplify functions
-
 def simplify_latex_expression(latex_expr):
-    return latex2sympy(latex2latex(latex_expr))
+    try:
+        result = latex2sympy(latex2latex(latex_expr))
+    except:
+        try:
+            result = simplify(latex2sympy(latex_expr).doit())
+        except:
+            try:
+                result = simplify(latex2sympy(latex_expr))
+            except:
+                result = latex2sympy(latex_expr)
+    return result
+     
 
 def simplify_sympy_expression(sympy_expr):
-    return simplify(sympy_expr.doit().doit())
+    try:
+        result = simplify(sympy_expr.doit().doit())
+    except:
+        try:
+           result = simplify(sympy_expr.doit())
+        except:
+            try:
+                result = simplify(sympy_expr)
+            except:
+                result = sympy_expr
+    return result
 
 
 # Compare functions
