@@ -1,0 +1,104 @@
+{
+    "exprl": {
+        "val": "POW",
+        "id": 1,
+        "children": [
+            {
+                "val": "7.0",
+                "id": 3
+            },
+            {
+                "val": "POW",
+                "id": 4,
+                "children": [
+                    {
+                        "val": "7.0",
+                        "id": 9
+                    },
+                    {
+                        "val": "POW",
+                        "id": 10,
+                        "children": [
+                            {
+                                "val": "-9.5",
+                                "id": 21
+                            },
+                            {
+                                "val": "k",
+                                "id": 22
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "expr2": {
+        "val": "POW",
+        "id": 1,
+        "children": [
+            {
+                "val": "7.0",
+                "id": 3
+            },
+            {
+                "val": "POW",
+                "id": 4,
+                "children": [
+                    {
+                        "val": "7.0",
+                        "id": 9
+                    },
+                    {
+                        "val": "POW",
+                        "id": 10,
+                        "children": [
+                            {
+                                "val": "-9.5",
+                                "id": 21
+                            },
+                            {
+                                "val": "k",
+                                "id": 22
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    "expr3": {
+        "val": "POW",
+        "id": 1,
+        "children": [
+            {
+                "val": "7.0",
+                "id": 3
+            },
+            {
+                "val": "MUL",
+                "id": 4,
+                "children": [
+                    {
+                        "val": "7.0",
+                        "id": 9
+                    },
+                    {
+                        "val": "POW",
+                        "id": 10,
+                        "children": [
+                            {
+                                "val": "-9.5",
+                                "id": 21
+                            },
+                            {
+                                "val": "k",
+                                "id": 22
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+}

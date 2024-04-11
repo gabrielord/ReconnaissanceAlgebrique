@@ -1,0 +1,49 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" async
+    src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Expression Checker</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <script type="text/javascript" async
+            src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML">
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Math Expression Checker</h1>
+
+        <label for="mathExpression">Enter Mathematical Expression:</label>
+        <input type="text" id="mathExpression" placeholder="e.g., 2 + 2">
+
+        <button onclick="renderMath()">Check</button>
+
+        <div id="mathjaxPanel" class="mathjax-panel"></div>
+
+        <h2>Rendered Math:</h2>
+        <div id="output"></div>
+
+        <script type="text/javascript">
+            // Function to render MathJax
+            function renderMath() {
+                // Get the input text from the textarea
+                var inputText = document.getElementById('mathExpression').value;
+
+                // Set the output div's innerHTML with the MathJax formatted text
+                document.getElementById('output').innerHTML = '$$' + inputText + '$$';
+
+                // Use MathJax to typeset the output
+                MathJax.typeset(['output']);
+            }
+        </script>
+
+    </div>
+
+    <script type="text/javascript" async src="script.js"></script>
+</body>
+</html>
