@@ -1,53 +1,60 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import './App.css';
 import Header from '../components/Header';
 
 function App() {
 
-  const firstEquationRef = useRef(null);
-  const secondEquationRef = useRef(null);
+  const [firstEquation, setFirstEquation] = useState("");
+  const [secondEquation, setSecondEquation] = useState("");
+  const [result, setResult] = useState("");
 
-  const checkSimilarity = (event: { preventDefault: () => void; }) => {
-    console.log("hty");
-    event.preventDefault();
-
-
-    const data = {
-      firstEquation: firstEquationRef.current,
-      secondEquation: secondEquationRef.current
-    };
-
-    fetch('https://your-backend-api.com/endpoint', {
+  const data = {'first_equation':firstEquation, 'second_equation':secondEquation}
+  console.log(data)
+  const checkSimilarity = async () => {
+    try {
+      // Make GET request to API endpoint
+      const response = await fetch('http://localhost:8000/get_score', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify(data)
     })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
-        }
-        return response.json();
-      })
-      .then(responseData => {
-        console.log('Response from server:', responseData);
-      })
-      .catch(error => {
-        console.error('There was a problem with the fetch operation:', error);
-      });
+      // Check if request was successful
+      if (response.ok) {
+        // Parse response JSON
+        const data = await response.json();
+        console.log(data);
+        console.log(data['result'][0]);
+        setResult("Distance: " + data['result'][0])
+      } else {
+        console.log('Error: Unable to process request');
+      }
+    } catch (error) {
+      console.log('Error: Unable to process request');
+    }
+  };
+
+  const SubmitFunction = (event: { preventDefault: () => void; }) => {
+    event.preventDefault();
+    checkSimilarity();
   };
 
   return (
     <div>
       <Header />
       <div className="App">
-
-        <form className="form" onSubmit={checkSimilarity}>
-          <input ref={firstEquationRef} name="first-equation" className="input-field"></input>
-          <input ref={secondEquationRef} name="second-equation" className="input-field"></input>
+        <div className="form">
+        <form onSubmit={SubmitFunction}>
+          <input  name="first-equation" className="input-field" onChange={(e) => setFirstEquation(e.target.value)}></input>
+          <input  name="second-equation" className="input-field" onChange={(e) => setSecondEquation(e.target.value)}></input>
           <button type="submit" className="submit-button">Similarity</button>
         </form>
+
+        <div className="result">
+        <p>{result}</p>
+        </div>
+        </div>
 
       </div>
     </div>
