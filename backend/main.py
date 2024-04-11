@@ -1,5 +1,7 @@
+from urllib.request import Request
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from engine import get_score
 app = FastAPI()
 
@@ -22,7 +24,7 @@ def parse_input(input_string):
  
 
 # Define a route to handle GET requests with two string arguments
-@app.get('/api/get_score/{string1}/{string2}')
+@app.get('/api/get_score/')
 def get_data(string1: str, string2: str):
     string1 = parse_input(string1)
     string2 = parse_input(string2)
@@ -33,4 +35,16 @@ def get_data(string1: str, string2: str):
     # Return JSON response
     return response
 
+
+@app.post("/get_score")
+async def receive_data(data: dict):
+    print(data)
+    string1 = data['first_equation']
+    string2 = data['second_equation']
+    # Call the function with the provided input strings
+    score = get_score(string1, string2)
+    # Create JSON response
+    response = {'result': [score]}
+    # Return JSON response
+    return response
 
